@@ -1,0 +1,9 @@
+{% extends "polls/base.html" %}
+
+{% block content %}      
+
+    <h1>Account Activation Failed</h1>
+    <p>We were unable to activate your account. The activation link is invalid or has expired.</p>
+    <p>Please <a href="{% url 'polls:register' %}">register</a> again or contact support if you need assistance.</p>
+
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends "polls/base.html" %}
+
+{% block content %}      
+
+    <h1>Account Activation Successful</h1>
+    <p>Congratulations! Your account has been successfully activated.</p>
+    <p>You may now <a href="{% url 'polls:login' %}">login</a> to start using your account. Enjoy!</p>
+
+{% endblock %}
