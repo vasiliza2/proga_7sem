@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Account Verification</title>
+</head>
+<body>
+    <p>Dear {{ user.username }},</p>
+    
+    <p>Thank you for creating an account. Please click the link below to activate your account:</p>
+    
+    <a href="http://{{ domain }}{% url 'polls:activate' uidb64=uid token=token %}">Activate Account</a>
+    
+    <p>If you did not create this account, you can safely ignore this email.</p>
+    
+    <p>Best regards,</p>
+    <p>Your Polls from the Crypt</p>
+</body>
+</html>

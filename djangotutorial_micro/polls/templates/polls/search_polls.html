@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Поиск голосований и статистика</title>
+    <style>
+        body { font-family: Arial, sans-serif; display: flex; margin: 20px; }
+        #search-panel { flex: 1; padding-right: 20px; border-right: 1px solid #ccc; }
+        #results-panel { flex: 2; padding-left: 20px; }
+        #poll-list ul { list-style-type: none; padding: 0; }
+        #poll-list li { margin-bottom: 5px; cursor: pointer; color: blue; text-decoration: underline; }
+        #poll-list li:hover { color: darkblue; }
+        .stat-item { margin-bottom: 10px; }
+        .chart-container img, .chart-container svg { max-width: 100%; height: auto; }
+        input[type="date"], input[type="text"], select, button { margin-bottom: 10px; padding: 8px; }
+    </style>
+</head>
+<body>
+    <div id="search-panel">
+        <h2>Поиск голосований</h2>
+        <input type="text" id="search-query" placeholder="Поиск по названию...">
+        <br>
+        <label for="start-date">Начальная дата:</label>
+        <input type="date" id="start-date">
+        <br>
+        <label for="end-date">Конечная дата:</label>
+        <input type="date" id="end-date">
+        <br>
+        <label for="sort-by">Сортировать по:</label>
+        <select id="sort-by">
+            <option value="date_desc">Дате (убыв.)</option>
+            <option value="date_asc">Дате (возр.)</option>
+            <option value="popularity">Популярности</option>
+        </select>
+        <br>
+        <button onclick="searchPolls()">Найти голосования</button>
+
+        <h3>Результаты поиска:</h3>
+        <div id="poll-list">
+            <ul>
+                <!-- Здесь будут отображаться найденные голосования -->
+            </ul>
+        </div>
+    </div>
+
+    <div id="results-panel">
+        <h2>Статистика по голосованию</h2>
+        <div id="poll-statistics">
+            <p>Выберите голосование слева, чтобы увидеть статистику.</p>
+        </div>
+        <div id="poll-chart" class="chart-container">
+            <!-- Здесь будет отображаться график -->
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = '/api/analytics/'; // Базовый URL для API аналитики
+
+        async function searchPolls() {
+            const query = document.getElementById('search-query').value;
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+            const sortBy = document.getElementById('sort-by').value;
+
+            let url = `${API_BASE_URL}questions/search/?`;
+            if (query) url += `q=${query}&`;
+            if (startDate) url += `start_date=${startDate}&`;
+            if (endDate) url += `end_date=${endDate}&`;
+            if (sortBy) url += `sort_by=${sortBy}&`;
+
+            const response = await fetch(url);
+            const data = await response.json();
+
+            const pollList = document.getElementById('poll-list').querySelector('ul');
+            pollList.innerHTML = ''; // Очищаем предыдущие результаты
+
+            if (data.length === 0) {
+                pollList.innerHTML = '<li>Голосования не найдены.</li>';
+                return;
+            }
+
+            data.forEach(poll => {
+                const li = document.createElement('li');
+                li.textContent = poll.question_text;
+                li.dataset.pollId = poll.id; // Сохраняем ID для последующих запросов
+                li.onclick = () => displayPollStatistics(poll.id);
+                pollList.appendChild(li);
+            });
+        }
+
+        async function displayPollStatistics(pollId) {
+            const statsPanel = document.getElementById('poll-statistics');
+            const chartPanel = document.getElementById('poll-chart');
+            statsPanel.innerHTML = '<p>Загрузка статистики...</p>';
+            chartPanel.innerHTML = '';
+
+            // Запрос статистики
+            const statsResponse = await fetch(`${API_BASE_URL}questions/${pollId}/stats/`);
+            const statsData = await statsResponse.json();
+
+            if (statsResponse.ok) {
+                let html = `<h3>${statsData.question_text}</h3>`;
+                html += `<div class="stat-item"><strong>Дата публикации:</strong> ${new Date(statsData.pub_date).toLocaleDateString()}</div>`;
+                html += `<div class="stat-item"><strong>Общее количество голосов:</strong> ${statsData.total_votes}</div>`;
+                html += `<h4>Варианты ответов:</h4><ul>`;
+                statsData.choices.forEach(choice => {
+                    html += `<li>${choice.choice_text}: ${choice.votes} голосов (${choice.percentage.toFixed(1)}%)</li>`;
+                });
+                html += `</ul>`;
+                statsPanel.innerHTML = html;
+            } else {
+                statsPanel.innerHTML = `<p>Ошибка загрузки статистики: ${statsData.error || 'Неизвестная ошибка'}</p>`;
+            }
+
+            // Запрос графика (можно выбрать SVG или PNG)
+            const chartResponse = await fetch(`${API_BASE_URL}questions/${pollId}/chart/svg/`); // Или chart/png/
+            const chartData = await chartResponse.json();
+
+            if (chartResponse.ok && chartData.svg_chart) {
+                // Если получаем SVG как строку, вставляем его напрямую
+                chartPanel.innerHTML = chartData.svg_chart;
+            } else if (chartResponse.ok && chartData.png_chart_base64) {
+                 // Если получаем PNG в base64, создаем img тег
+                chartPanel.innerHTML = `<img src="data:image/png;base64,${chartData.png_chart_base64}" alt="График голосования">`;
+            } else {
+                chartPanel.innerHTML = `<p>Ошибка загрузки графика: ${chartData.error || 'Неизвестная ошибка'}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
