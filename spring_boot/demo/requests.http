@@ -1,0 +1,49 @@
+### 1. POST: Создать новую задачу (Create)
+# Ожидаемый ответ: HTTP 200 OK или 201 Created (с созданной задачей)
+POST http://localhost:8080/api/tasks
+Authorization: Basic admin admin123
+Content-Type: application/json
+
+{
+    "title": "Первая задача REST",
+    "description": "Проверить POST-запрос и сохранение в H2.",
+    "status": "Pending"
+}
+
+### 2. GET: Получить список всех задач (Read All)
+# Ожидаемый ответ: HTTP 200 OK (со списком задач, включая созданную в Шаге 1)
+GET http://localhost:8080/api/tasks
+Authorization: Basic admin admin123
+Accept: application/json
+
+### 3. GET: Получить задачу по ID (Read One)
+# ЗАМЕНИТЕ {id} на ID, полученный в ответе Шага 1 (обычно 1)
+# Ожидаемый ответ: HTTP 200 OK (с данными одной задачи)
+GET http://localhost:8080/api/tasks/1
+Authorization: Basic admin admin123
+Accept: application/json
+
+### 4. PUT: Обновить существующую задачу (Update)
+# ЗАМЕНИТЕ {id} на ID задачи, которую вы создали.
+# Ожидаемый ответ: HTTP 200 OK (с обновленными данными задачи)
+PUT http://localhost:8080/api/tasks/1
+Authorization: Basic admin admin123
+Content-Type: application/json
+
+{
+    "title": "Задача обновлена",
+    "description": "Проверен PUT-запрос.",
+    "status": "Completed"
+}
+
+### 5. DELETE: Удалить задачу (Delete)
+# ЗАМЕНИТЕ {id} на ID задачи, которую вы обновили.
+# Ожидаемый ответ: HTTP 204 No Content
+DELETE http://localhost:8080/api/tasks/1
+Authorization: Basic admin admin123
+
+### 6. GET: Проверка 404 Not Found (После удаления)
+# Проверить, что задача 1 удалена. Ожидаемый ответ: HTTP 404 Not Found
+GET http://localhost:8080/api/tasks/1
+Authorization: Basic admin admin123
+Accept: application/json

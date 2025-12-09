@@ -1,0 +1,33 @@
+# ===============================================
+# 1. Настройки базы данных H2
+# ===============================================
+spring:
+  datasource:
+    # Использование in-memory базы данных с именем 'taskdb'
+    url: jdbc:h2:mem:taskdb
+    driverClassName: org.h2.Driver
+    username: sa
+    password: password
+
+  # Настройки консоли H2
+  h2:
+    console:
+      # Включить веб-консоль H2 для отладки
+      enabled: true
+      # Путь для доступа к консоли (http://localhost:8080/h2-console)
+      path: /h2-console 
+
+# ===============================================
+# 2. Настройки JPA и Hibernate
+# ===============================================
+  jpa:
+    hibernate:
+      # ddl-auto:
+      #   - 'update': Spring попытается обновить схему базы данных (добавить/изменить таблицы) на основе сущностей.
+      #   - 'create': Удаляет и создает таблицы при каждом запуске.
+      ddl-auto: update
+    # Показать SQL-запросы в консоли (полезно для отладки)
+    show-sql: true
+    # Указываем H2 как диалект базы данных
+    database-platform: org.hibernate.dialect.H2Dialect
+
