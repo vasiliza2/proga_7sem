@@ -23,8 +23,14 @@ Uvicorn (ASGI сервер)
 ![img.png](1.png)
 Скриншот 2: Получение книги по ID
 ![img_1.png](2.png)
-Скриншот 3: Эндпоинт POST /api/books
-![img_2.png](img_2.png)
+Скриншот 3: Создание новой книги:
+![img_2.png](3.png)
+Скриншот 4: Частичное обновление книги:
+![img_2.png](4.png)
+Скриншот 5: Удаление книги:
+![img_2.png](5.png)
+Скриншот 6: Тестирование валидации:
+![img_2.png](6.png)
 
 
 ## Фрагменты кода с пояснениями
@@ -33,15 +39,22 @@ Uvicorn (ASGI сервер)
 from pydantic import BaseModel, Field
 from datetime import datetime
 
-class BookBase(BaseModel):
-    title: str = Field(..., min_length=1, max_length=200, 
-                      description="Название книги")
-    author: str = Field(..., min_length=1, max_length=100, 
-                       description="Автор книги")
-    year: int = Field(..., ge=1000, le=datetime.now().year, 
-                     description="Год издания")
-    isbn: Optional[str] = Field(None, min_length=10, max_length=13, 
-                               description="ISBN книги")
+class Book(BaseModel):
+    id: Optional[int] = None
+    title: str = Field(..., min_length=1, max_length=200, description="Название книги")
+    author: str = Field(..., min_length=1, max_length=100, description="Автор книги")
+    year: int = Field(..., ge=1000, le=datetime.now().year, description="Год издания")
+    isbn: Optional[str] = Field(None, min_length=10, max_length=13, description="ISBN книги")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "title": "Мастер и Маргарита",
+                "author": "Михаил Булгаков",
+                "year": 1967,
+                "isbn": "9785170123456"
+            }
+        }
 ```
 Дання модель определяет структуру данных книги с валидацией:
 * Field(..., min_length=1) 
@@ -50,25 +63,40 @@ class BookBase(BaseModel):
 
 Код 2: Эндпоинт для получения книг с фильтрацией
 ```python
-@router.get("/", response_model=List[Book])
+@app.get("/api/books", response_model=List[Book], tags=["Books"])
 async def get_books(
-    skip: int = 0,                    # Пагинация: пропустить N записей
-    limit: int = 100,                 # Пагинация: ограничить количество
-    author: Optional[str] = None,     # Фильтр по автору
-    year_from: Optional[int] = None,  # Фильтр: минимальный год
-    year_to: Optional[int] = None,    # Фильтр: максимальный год
-    db: Session = Depends(get_db)     # Зависимость от БД
+    author: Optional[str] = Query(None, description="Фильтр по автору (частичное совпадение)"),
+    year_from: Optional[int] = Query(None, description="Минимальный год издания"),
+    year_to: Optional[int] = Query(None, description="Максимальный год издания"),
+    skip: int = Query(0, ge=0, description="Количество книг для пропуска (offset)"),
+    limit: int = Query(10, ge=1, le=100, description="Максимальное количество возвращаемых книг")
 ):
-    query = db.query(BookDB)
-    
+    """
+
+    - **author**: Фильтр по автору (регистронезависимо)
+    - **year_from**: Минимальный год издания
+    - **year_to**: Максимальный год издания
+    - **skip**: Смещение от начала списка
+    - **limit**: Ограничение количества результатов
+    """
+    # 1. Применяем фильтрацию
+    filtered_books = books_db
+
     if author:
-        query = query.filter(BookDB.author.ilike(f"%{author}%"))
+        author_lower = author.lower()
+        filtered_books = [
+            b for b in filtered_books 
+            if author_lower in b.author.lower()
+        ]
+
     if year_from:
-        query = query.filter(BookDB.year >= year_from)
+        filtered_books = [b for b in filtered_books if b.year >= year_from]
+
     if year_to:
-        query = query.filter(BookDB.year <= year_to)
-    
-    return query.offset(skip).limit(limit).all()
+        filtered_books = [b for b in filtered_books if b.year <= year_to]
+
+    # 2. Применяем пагинацию к отфильтрованному списку
+    return filtered_books[skip : skip + limit]
 ```
 Эндпоинт поддерживает:
 * Пагинацию через параметры skip и limit
@@ -93,138 +121,80 @@ async def get_book(book_id: int, db: Session = Depends(get_db)):
 ## Дополнительно реализованные книги
 Статистика по книгам:
 ```python
-# GET /api/books/stats/statistics - Статистика по книгам
-@router.get("/stats/statistics", response_model=StatisticsResponse, tags=["Statistics"])
-async def get_statistics(db: Session = Depends(get_db)):
+@app.get("/api/books/stats", tags=["Statistics"])
+async def get_statistics():
     """
     Получить статистику по книгам.
-    
+
     Возвращает:
-    - Общее количество книг
-    - Распределение по авторам
-    - Распределение по векам
+    - **total_books**: Общее количество книг в базе данных.
+    - **books_by_author**: Распределение количества книг по авторам.
+    - **books_by_century**: Распределение книг по векам издания.
     """
-    books = db.query(BookDB).all()
+    total_books = len(books_db)
     
-    if not books:
-        return {
-            "total_books": 0,
-            "books_by_author": {},
-            "books_by_century": {}
-        }
+    # Подсчет количества книг по авторам
+    authors_counts = Counter(book.author for book in books_db)
     
-    total_books = len(books)
-    authors = Counter(book.author for book in books)
-    centuries = Counter(book.year // 100 + 1 for book in books)
+    # Подсчет книг по векам (например, 1954 // 100 + 1 = 20 век)
+    centuries_counts = Counter(book.year // 100 + 1 for book in books_db)
     
+    # Формируем читаемый словарь для веков
+    stats_by_century = {
+        f"{century} век": count 
+        for century, count in sorted(centuries_counts.items())
+    }
+
     return {
         "total_books": total_books,
-        "books_by_author": dict(authors),
-        "books_by_century": {f"{century} век": count for century, count in centuries.items()}
+        "books_by_author": dict(authors_counts),
+        "books_by_century": stats_by_century
     }
+
 ```
-Поиск по ключевому слову
-```python
-@router.get("/search/{keyword}", response_model=List[Book])
-async def search_books(keyword: str, db: Session = Depends(get_db)):
-    """
-    Поиск книг по ключевому слову.
 
-    Параметры:
-    - **keyword**: Ключевое слово для поиска
-
-    Ищет ключевое слово в названии и авторе книги.
-    Возвращает список найденных книг.
-    """
-    books = db.query(BookDB).filter(
-        (BookDB.title.ilike(f"%{keyword}%")) |
-        (BookDB.author.ilike(f"%{keyword}%"))
-    ).all()
-
-    return books
-```
 Частичное обновление (PATCH)
 ```python
-@router.patch("/{book_id}", response_model=Book)
-async def partial_update_book(
-        book_id: int,
-        book_update: BookUpdate,
-        db: Session = Depends(get_db)
-):
+# PATCH /api/books/{book_id} - Частичное обновление книги
+@app.patch("/api/books/{book_id}", response_model=Book, tags=["Books"])
+async def partial_update_book(book_id: int, book_update: BookUpdate):
     """
     Частично обновить информацию о книге.
-
-    Параметры:
+    
     - **book_id**: ID книги для обновления
     - **book_update**: Данные для обновления (только указанные поля будут изменены)
-
-    Обновляет только те поля, которые были переданы в запросе.
-    Если книга не найдена, возвращается ошибка 404.
     """
-    db_book = db.query(BookDB).filter(BookDB.id == book_id).first()
-    if not db_book:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Книга с ID {book_id} не найдена"
-        )
+    for book in books_db:
+        if book.id == book_id:
+            # Обновляем только те поля, которые были явно переданы в запросе
+            update_data = book_update.model_dump(exclude_unset=True)
+            for field, value in update_data.items():
+                setattr(book, field, value)
+            return book
+            
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"Книга с ID {book_id} не найдена"
+    )
 
-    # Получаем только переданные поля (исключаем None)
-    update_data = book_update.model_dump(exclude_unset=True)
-
-    # Проверяем ISBN, если он изменен
-    if 'isbn' in update_data and update_data['isbn'] != db_book.isbn:
-        existing_book = db.query(BookDB).filter(
-            BookDB.isbn == update_data['isbn'],
-            BookDB.id != book_id
-        ).first()
-        if existing_book:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Книга с ISBN {update_data['isbn']} уже существует"
-            )
-
-    # Обновляем только переданные поля
-    for field, value in update_data.items():
-        setattr(db_book, field, value)
-
-    db.commit()
-    db.refresh(db_book)
-    return db_book
 ```
 
 ## Результаты тестирования
-Тест 1: Получение всех книг
-![img_3.png](img_3.png)
-
-Тест 2: Фильтрация по автору
-![img_4.png](img_4.png)
-
-Тест 3: Создание новой книги
-![img_5.png](img_5.png)
-
-Тест 4: PUT
-![img_6.png](img_6.png)
-
-Тест 5: Частичное обновление книги PATCH
-![img_7.png](img_7.png)
-
-Тест 5: Удаление книги по id
-![img_8.png](img_8.png)
-
-Тест 6: Получение статистики
-![img_9.png](img_9.png)
-
-Тест 7: Поиск по ключевому слову
-![img_10.png](img_10.png)
+Тест 1: GET /api/books?author=толстой - должны вернуться книги Льва Толстого
+GET /api/books?year_from=1860&year_to=1870 - книги, изданные в 1860-1870 годах
+![img_3.png](7.png)
+)
 
 ## Контрольные вопросы  
 1. Что такое REST и какие шесть принципов лежат в его основе?
-REST— архитектурный стиль для веб-сервисов, использующий стандартные HTTP методы. 
-- Единообразный интерфейс - стандартные методы HTTP, URI для ресурсов 
-- Stateless - каждый запрос независим 
-- Кэширование - ответы могут кэшироваться
-- Клиент-серверная архитектура*- разделение ответственности
-- Слоистая система - промежуточные серверы 
+- REST (Representational State Transfer) — это архитектурный стиль взаимодействия компонентов распределенного приложения в сети, использующий протокол HTTP.
+- Client-Server (Клиент-серверная модель): Разделение интерфейса пользователя и логики хранения данных.
+- Stateless (Отсутствие состояния): Сервер не хранит данные о сессии между запросами. Каждый запрос должен содержать всю информацию для его обработки.
+- Cacheable (Кэширование): Ответы должны помечаться как кэшируемые или нет, чтобы снизить нагрузку.
+- Uniform Interface (Единый интерфейс): Стандартизация взаимодействия (использование URI, HTTP-методов и JSON/XML).
+- Layered System (Многоуровневая система): Клиент не знает, общается он напрямую с сервером или через посредников (балансировщики, прокси).
+- Code on Demand (Код по запросу — необязательный): Возможность передачи исполняемого кода (например, JavaScript-скриптов) клиенту.
+
 
 2. В чем разница между методами PUT и PATCH?
 
