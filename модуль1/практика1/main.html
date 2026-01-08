@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Урок: Сортировка пузырьком</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #f39c12;
+            --bg-color: #f4f7f6;
+            --text-color: #2c3e50;
+            --white: #ffffff;
+            --accent-color: #e74c3c;
+        }
+
+        * {
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Навигация */
+        nav {
+            background: var(--text-color);
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        nav a {
+            color: var(--white);
+            text-decoration: none;
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        nav a:hover {
+            background: var(--primary-color);
+        }
+
+        /* Шапка */
+        header {
+            background: linear-gradient(135deg, var(--primary-color), #e128ce);
+            color: var(--white);
+            padding: 60px 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Контент */
+        main {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        section {
+            background: var(--white);
+            padding: 30px;
+            margin-bottom: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        /* Определения */
+        .definition-box {
+            background: #eef6ff;
+            border-left: 5px solid var(--primary-color);
+            padding: 15px;
+            font-style: italic;
+            margin: 20px 0;
+        }
+
+        /* Интерактивные примеры */
+        .sort-container {
+            display: flex;
+            align-items: flex-end;
+            height: 150px;
+            gap: 10px;
+            margin: 20px 0;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 10px;
+        }
+
+        .bar {
+            background: var(--secondary-color);
+            width: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            color: white;
+            font-weight: bold;
+            border-radius: 5px 5px 0 0;
+        }
+
+        .bar:hover {
+            transform: scaleY(1.1);
+            background: var(--primary-color);
+        }
+
+        button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        button:hover {
+            background: #357abd;
+            transform: translateY(-2px);
+        }
+
+        /* Задания */
+        .task-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+        }
+
+        .answer-box {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            background: #d4edda;
+            border-radius: 5px;
+            color: #155724;
+        }
+
+        /* Футер */
+        footer {
+            text-align: center;
+            padding: 40px;
+background: #2c3e50;
+            color: white;
+            margin-top: 50px;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.8rem; }
+            nav { flex-direction: column; align-items: center; }
+            .bar { width: 25px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="#theory">Теория</a>
+        <a href="#examples">Примеры</a>
+        <a href="#tasks">Задания</a>
+    </nav>
+
+    <header>
+        <h1>Сортировка пузырьком</h1>
+        <p>Изучаем самый наглядный алгоритм сортировки</p>
+    </header>
+    
+    <main>
+        <section id="theory">
+            <h2>Теория</h2>
+            <p><strong>Сортировка пузырьком (Bubble Sort)</strong> — это простой алгоритм сортировки. Он многократно проходит по списку, сравнивает соседние элементы и меняет их местами, если они находятся в неправильном порядке.</p>
+            
+            <div class="definition-box">
+                <strong>Сложность алгоритма:</strong> В худшем и среднем случае временная сложность составляет $O(n^2)$, где $n$ — количество элементов.
+            </div>
+
+            <h3>Как это работает:</h3>
+            <ul>
+                <li>Сравниваем первый и второй элементы.</li>
+                <li>Если первый больше второго, меняем их местами.</li>
+                <li>Переходим к следующей паре и повторяем до конца массива.</li>
+                <li>Самый "тяжелый" элемент (максимальный) "всплывает" в конец списка.</li>
+            </ul>
+        </section>
+        
+        <section id="examples">
+            <h2>Интерактивные примеры</h2>
+            
+            <div>
+                <h3>1. Визуализация массива</h3>
+                <p>Наведите на столбики, чтобы увидеть их значения. Нажмите кнопку, чтобы перемешать их.</p>
+                <div id="sort-visual" class="sort-container">
+                    </div>
+                <button onclick="shuffleBars()">Перемешать массив</button>
+            </div>
+
+            <div style="margin-top: 40px;">
+                <h3>2. Пошаговый обмен</h3>
+                <p>Представьте массив [5, 2]. После одного шага сравнения:</p>
+                <div id="mini-demo" class="sort-container" style="height: 100px;">
+                    <div class="bar" style="height: 80%; width: 60px;">5</div>
+                    <div class="bar" style="height: 40%; width: 60px;">2</div>
+                </div>
+                <button onclick="swapDemo()">Выполнить обмен (Swap)</button>
+            </div>
+        </section>
+        
+        <section id="tasks">
+            <h2>Задания для самопроверки</h2>
+            
+            <div class="task-card">
+                <p><strong>Задание 1:</strong> Сколько проходов по массиву из 5 элементов нужно сделать в худшем случае, чтобы гарантированно его отсортировать?</p>
+                <button onclick="toggleAnswer('ans1')">Показать/Скрыть ответ</button>
+                <div id="ans1" class="answer-box">Ответ: 4 прохода (n-1).</div>
+            </div>
+
+            <div class="task-card">
+                <p><strong>Задание 2:</strong> Какой элемент окажется в самом конце массива после первого полного прохода алгоритма?</p>
+                <button onclick="toggleAnswer('ans2')">Показать/Скрыть ответ</button>
+                <div id="ans2" class="answer-box">Ответ: Самый большой (максимальный) элемент.</div>
+            </div>
+
+            <div class="task-card">
+                <p><strong>Задание 3:</strong> Какая будет временная сложность, если массив уже отсортирован (с использованием оптимизации)?</p>
+                <button onclick="toggleAnswer('ans3')">Показать/Скрыть ответ</button>
+                <div id="ans3" class="answer-box">Ответ: $O(n)$.</div>
+            </div>
+        </section>
+    </main>
+    
+    <footer>
+        <p>Автор: Васильева Е.Д.</p>
+        <p>&copy; 2026</p>
+    </footer>
+    
+    <script>
+        // Функция для скрытия/показа ответов
+        function toggleAnswer(id) {
+            const element = document.getElementById(id);
+if (element.style.display === "block") {
+                element.style.display = "none";
+            } else {
+                element.style.display = "block";
+            }
+        }
+
+        // Логика визуализации массива
+        const container = document.getElementById('sort-visual');
+        let values = [40, 70, 20, 90, 50, 30];
+
+        function renderBars() {
+            container.innerHTML = '';
+            values.forEach(val => {
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.style.height = val + '%';
+                bar.innerText = val;
+                container.appendChild(bar);
+            });
+        }
+
+        function shuffleBars() {
+            values.sort(() => Math.random() - 0.5);
+            renderBars();
+        }
+
+        // Мини-демо обмена
+        let demoState = [5, 2];
+        function swapDemo() {
+            const demoContainer = document.getElementById('mini-demo');
+            demoState.reverse();
+            demoContainer.innerHTML = `
+                <div class="bar" style="height: ${demoState[0]*15}%; width: 60px;">${demoState[0]}</div>
+                <div class="bar" style="height: ${demoState[1]*15}%; width: 60px;">${demoState[1]}</div>
+            `;
+        }
+
+        // Инициализация при загрузке
+        renderBars();
+    </script>
+</body>
+</html>
