@@ -31,7 +31,7 @@ weather:
   api:
     # ВАЖНО: Замените на ваш реальный API ключ от OpenWeatherMap
     # Получить можно на https://openweathermap.org/appid
-    key: 8ea5b1954cac3c8af0f1e95455339d14
+    key: 
     url: https://api.openweathermap.org/data/2.5/weather
     # Задержка между запросами в миллисекундах (для имитации rate limiting)
     delay: 1000
