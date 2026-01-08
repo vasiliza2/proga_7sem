@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Forecast Aggregator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Weather Forecast Aggregator</h1>
+        <p class="subtitle">Введите список городов для получения прогноза погоды</p>
+        
+        <div class="input-section">
+            <textarea 
+                id="citiesInput" 
+                rows="8"
+            ></textarea>
+            <button id="fetchButton" onclick="fetchWeather()">Получить прогноз</button>
+        </div>
+
+        <div id="loadingIndicator" class="loading hidden">
+            <div class="spinner"></div>
+            <p>Загрузка данных о погоде...</p>
+        </div>
+
+        <div id="errorMessage" class="error hidden"></div>
+
+        <div id="resultsSection" class="results hidden">
+            <h2>Результаты</h2>
+            <div class="stats">
+                <span id="statsText"></span>
+            </div>
+            <table id="resultsTable">
+                <thead>
+                    <tr>
+                        <th>Город</th>
+                        <th>Температура</th>
+                        <th>Ощущается как</th>
+                        <th>Описание</th>
+                        <th>Влажность</th>
+                        <th>Давление</th>
+                        <th>Скорость ветра</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,252 @@
+/* Общие стили */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+    color: #333;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+/* Header */
+header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 40px;
+    text-align: center;
+}
+
+header h1 {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    font-size: 1.1em;
+    opacity: 0.9;
+}
+
+/* Main content */
+main {
+    padding: 40px;
+}
+
+section {
+    margin-bottom: 40px;
+}
+
+h2 {
+    color: #667eea;
+    margin-bottom: 20px;
+    font-size: 1.8em;
+}
+
+/* Form styles */
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: #555;
+}
+
+textarea {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1em;
+    font-family: 'Courier New', monospace;
+    resize: vertical;
+    transition: border-color 0.3s;
+}
+
+textarea:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+/* Button styles */
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    font-size: 1.1em;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Loading indicator */
+.loading {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Summary info */
+.summary-info {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    border-left: 4px solid #667eea;
+}
+
+.summary-info p {
+    margin: 10px 0;
+    font-size: 1.1em;
+}
+
+.summary-info strong {
+    color: #667eea;
+}
+
+/* Table styles */
+.table-container {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+thead {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+th {
+    padding: 15px;
+    text-align: left;
+    font-weight: 600;
+}
+
+tbody tr {
+    border-bottom: 1px solid #e0e0e0;
+    transition: background-color 0.2s;
+}
+
+tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+td {
+    padding: 15px;
+}
+
+/* Status badges */
+.status-badge {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-weight: 600;
+}
+
+.status-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-error {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Temperature styling */
+.temperature {
+    font-size: 1.2em;
+    font-weight: 600;
+    color: #667eea;
+}
+
+/* Error section */
+.error-section {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.error-message {
+    color: #721c24;
+    font-size: 1.1em;
+}
+
+/* Footer */
+footer {
+    background-color: #f8f9fa;
+    padding: 20px;
+    text-align: center;
+    color: #666;
+    border-top: 1px solid #e0e0e0;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 1.8em;
+    }
+
+    main {
+        padding: 20px;
+    }
+
+    table {
+        font-size: 0.9em;
+    }
+
+    th, td {
+        padding: 10px;
+    }
+}
